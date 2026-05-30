@@ -243,6 +243,7 @@ public class LaundryService {
         response.setClosingHours(laundry.getClosingHours());
         response.setLogoPath(laundry.getLogoPath());
         response.setShopImagePath(laundry.getShopImagePath());
+        response.setAdditionalImagePaths(laundry.getAdditionalImagePaths());
         response.setVerified(laundry.isVerified());
         
         // Add rating information
@@ -251,5 +252,40 @@ public class LaundryService {
         response.setTotalRatings(ratingService.getLaundryRatings(laundry.getId()).size());
         
         return response;
+    }
+
+    public List<LaundryDetailsResponse> searchLaundriesByText(String query, String location) {
+        List<Laundry> all = laundryRepository.findAll();
+        List<LaundryDetailsResponse> responses = new ArrayList<>();
+        
+        boolean hasQuery = query != null && !query.trim().isEmpty();
+        boolean hasLocation = location != null && !location.trim().isEmpty();
+        
+        if (!hasQuery && !hasLocation) {
+            return responses;
+        }
+        
+        String lowerQuery = hasQuery ? query.toLowerCase().trim() : "";
+        String lowerLocation = hasLocation ? location.toLowerCase().trim() : "";
+        
+        for (Laundry laundry : all) {
+            boolean queryMatches = !hasQuery;
+            if (hasQuery) {
+                queryMatches = (laundry.getLaundryName() != null && laundry.getLaundryName().toLowerCase().contains(lowerQuery))
+                        || (laundry.getServicesOffered() != null && laundry.getServicesOffered().toLowerCase().contains(lowerQuery));
+            }
+            
+            boolean locationMatches = !hasLocation;
+            if (hasLocation) {
+                locationMatches = (laundry.getAddress() != null && laundry.getAddress().toLowerCase().contains(lowerLocation))
+                        || (laundry.getCity() != null && laundry.getCity().toLowerCase().contains(lowerLocation))
+                        || (laundry.getDistrict() != null && laundry.getDistrict().toLowerCase().contains(lowerLocation));
+            }
+            
+            if (queryMatches && locationMatches) {
+                responses.add(convertToDetailsResponse(laundry));
+            }
+        }
+        return responses;
     }
 }

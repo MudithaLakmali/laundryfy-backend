@@ -31,6 +31,8 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/driver/**").permitAll()
                 .requestMatchers("/api/laundry/**").permitAll()
                 .requestMatchers("/api/user/**").permitAll()
+                .requestMatchers("/api/ratings/**").permitAll()
+                .requestMatchers("/api/orders/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()

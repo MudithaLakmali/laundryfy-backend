@@ -13,4 +13,7 @@ public class OrderRequest {
     private double price;
     private long pickupTimestamp;
     private long deliveryTimestamp;
+    private String pickupAddress;
+    private String pickupCity;
+    private String pickupDistrict;
 }

@@ -24,8 +24,36 @@ public class Order {
     private String serviceType;
     private double price;
 
-    private String status; // e.g., CREATED, PICKED_UP, IN_PROCESS, OUT_FOR_DELIVERY, DELIVERED, CANCELLED
+    // Status: PENDING, ACCEPTED, REJECTED, DRIVER_ASSIGNED, PICKED_UP, DELIVERED, REVIEWED, CANCELLED
+    private String status;
     private String paymentStatus; // PENDING, PARTIAL, PAID, FAILED
+
+    // Pickup location (entered by customer)
+    private String pickupAddress;
+    private String pickupCity;
+    private String pickupDistrict;
+
+    // Denormalized info for display
+    private String customerName;
+    private String customerPhone;
+    private String laundryName;
+    private String laundryAddress;
+    private String driverName;
+
+    // Review fields (set by laundry after delivery)
+    private double weight;          // kg
+    private double laundryPrice;    // wash/service cost
+    private double deliveryFee;     // delivery charge
+    private String reviewNotes;     // optional laundry notes
+
+    // Extended payment & return delivery lifecycle fields
+    private String bankReceiptName;
+    private String paymentNotes;
+
+    // Customer review & rating fields
+    private double laundryRating;
+    private String laundryReview;
+    private String reviewImagePath;
 
     private long pickupTimestamp;
     private long deliveryTimestamp;

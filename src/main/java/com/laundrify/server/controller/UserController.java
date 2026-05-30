@@ -32,7 +32,12 @@ public class UserController {
             user.getLastName(),
             user.getEmail(),
             user.getRole(),
-            user.isEnabled()
+            user.isEnabled(),
+            user.getAddress(),
+            user.getCity(),
+            user.getDistrict(),
+            user.getProvince(),
+            user.getPostalCode()
         );
 
         return ResponseEntity.ok(response);

@@ -155,6 +155,25 @@ public class RatingController {
                     }});
         }
     }
+
+    @GetMapping("/laundries/search")
+    public ResponseEntity<?> searchLaundries(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) String location) {
+        try {
+            List<LaundryDetailsResponse> laundries = laundryService.searchLaundriesByText(query, location);
+            return ResponseEntity.ok(new HashMap<String, Object>() {{
+                put("success", true);
+                put("laundries", laundries);
+                put("count", laundries.size());
+            }});
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new HashMap<String, String>() {{
+                        put("error", "Search failed: " + e.getMessage());
+                    }});
+        }
+    }
     
     @GetMapping("/laundries/{laundryId}")
     public ResponseEntity<?> getLaundryDetails(@PathVariable String laundryId) {

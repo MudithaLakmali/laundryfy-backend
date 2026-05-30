@@ -23,6 +23,7 @@ public class LaundryDetailsResponse {
     private String closingHours;
     private String logoPath;
     private String shopImagePath;
+    private java.util.List<String> additionalImagePaths;
     private double averageRating; // Calculated average from all ratings
     private int totalRatings; // Total number of ratings
     private boolean verified;
