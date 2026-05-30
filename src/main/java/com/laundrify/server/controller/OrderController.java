@@ -45,6 +45,13 @@ public class OrderController {
         return ResponseEntity.ok(resp);
     }
 
+    @GetMapping("/laundry/{laundryId}")
+    public ResponseEntity<List<OrderResponse>> getOrdersByLaundry(@PathVariable String laundryId) {
+        List<Order> list = orderService.getOrdersByLaundry(laundryId);
+        List<OrderResponse> resp = list.stream().map(this::toResponse).collect(Collectors.toList());
+        return ResponseEntity.ok(resp);
+    }
+
     @PutMapping("/{id}/status")
     public ResponseEntity<?> updateStatus(@PathVariable String id, @RequestParam String status) {
         Order updated = orderService.updateStatus(id, status);

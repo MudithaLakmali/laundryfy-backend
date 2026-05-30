@@ -10,6 +10,7 @@ import com.laundrify.server.repository.LaundryRepository;
 import com.laundrify.server.repository.UserRepository;
 import com.laundrify.server.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class LaundryService {
 
     private final LaundryRepository laundryRepository;
@@ -147,7 +149,12 @@ public class LaundryService {
             response.setToken(jwtUtil.generateToken(savedUser.getEmail(), savedUser.getId(), savedUser.getRole()));
             response.setRefreshToken(jwtUtil.generateRefreshToken(savedUser.getEmail(), savedUser.getId()));
 
-            emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getFirstName(), savedUser.getRole());
+            try {
+                emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getFirstName(), savedUser.getRole());
+            } catch (Exception emailException) {
+                log.warn("Laundry signup completed but welcome email failed for {}: {}", savedUser.getEmail(), emailException.getMessage());
+                response.setMessage("Laundry registration completed successfully (welcome email pending)");
+            }
 
         } catch (IOException e) {
             response.setSuccess(false);

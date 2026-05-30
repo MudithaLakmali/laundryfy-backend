@@ -8,6 +8,7 @@ import com.laundrify.server.repository.CustomerRepository;
 import com.laundrify.server.repository.UserRepository;
 import com.laundrify.server.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +16,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CustomerService {
     
     private final UserRepository userRepository;
@@ -98,8 +100,13 @@ public class CustomerService {
             response.setName(savedUser.getFirstName() + " " + savedUser.getLastName());
             response.setRole(savedUser.getRole());
             
-            // Send welcome email
-            emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getFirstName(), savedUser.getRole());
+            // Do not fail a successful registration if email delivery is unavailable.
+            try {
+                emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getFirstName(), savedUser.getRole());
+            } catch (Exception emailException) {
+                log.warn("Customer signup completed but welcome email failed for {}: {}", savedUser.getEmail(), emailException.getMessage());
+                response.setMessage("Customer registered successfully (welcome email pending)");
+            }
             
         } catch (Exception e) {
             response.setSuccess(false);
