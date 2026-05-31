@@ -37,11 +37,16 @@ public class OrderResponse {
     // Extended payment & return delivery lifecycle fields
     private String bankReceiptName;
     private String paymentNotes;
+    private String receiptImagePath;
 
     // Customer review & rating fields
     private double laundryRating;
     private String laundryReview;
     private String reviewImagePath;
+
+    // Driver review & rating fields
+    private double driverRating;
+    private String driverReview;
 
     private long pickupTimestamp;
     private long deliveryTimestamp;
@@ -55,7 +60,9 @@ public class OrderResponse {
                          String pickupAddress, String pickupCity, String pickupDistrict,
                          String customerName, String customerPhone, String laundryName, String laundryAddress, String driverName,
                          double weight, double laundryPrice, double deliveryFee, String reviewNotes,
-                         String bankReceiptName, String paymentNotes, double laundryRating, String laundryReview, String reviewImagePath,
+                         String bankReceiptName, String paymentNotes, String receiptImagePath,
+                         double laundryRating, String laundryReview, String reviewImagePath,
+                         double driverRating, String driverReview,
                          long pickupTimestamp, long deliveryTimestamp, long createdAt, long updatedAt) {
         this.id = id;
         this.userId = userId;
@@ -80,9 +87,12 @@ public class OrderResponse {
         this.reviewNotes = reviewNotes;
         this.bankReceiptName = bankReceiptName;
         this.paymentNotes = paymentNotes;
+        this.receiptImagePath = receiptImagePath;
         this.laundryRating = laundryRating;
         this.laundryReview = laundryReview;
         this.reviewImagePath = reviewImagePath;
+        this.driverRating = driverRating;
+        this.driverReview = driverReview;
         this.pickupTimestamp = pickupTimestamp;
         this.deliveryTimestamp = deliveryTimestamp;
         this.createdAt = createdAt;

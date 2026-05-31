@@ -1,23 +1,29 @@
 package com.laundrify.server.service;
 
-import com.laundrify.server.dto.SignupRequest;
-import com.laundrify.server.dto.LoginRequest;
-import com.laundrify.server.dto.AuthResponse;
-import com.laundrify.server.dto.PasswordResetRequest;
-import com.laundrify.server.dto.PasswordResetVerifyRequest;
-import com.laundrify.server.dto.DriverSignupRequest;
-import com.laundrify.server.dto.LaundrySignupRequest;
-import com.laundrify.server.model.User;
-import com.laundrify.server.model.PasswordResetToken;
-import com.laundrify.server.repository.UserRepository;
-import com.laundrify.server.repository.PasswordResetTokenRepository;
-import com.laundrify.server.util.JwtUtil;
-import lombok.RequiredArgsConstructor;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.Optional;
-import java.util.UUID;
+import com.laundrify.server.dto.AuthResponse;
+import com.laundrify.server.dto.DriverSignupRequest;
+import com.laundrify.server.dto.LaundrySignupRequest;
+import com.laundrify.server.dto.LoginRequest;
+import com.laundrify.server.dto.PasswordResetRequest;
+import com.laundrify.server.dto.PasswordResetVerifyRequest;
+import com.laundrify.server.dto.SignupRequest;
+import com.laundrify.server.model.PasswordResetToken;
+import com.laundrify.server.model.User;
+import com.laundrify.server.repository.PasswordResetTokenRepository;
+import com.laundrify.server.repository.UserRepository;
+import com.laundrify.server.repository.LaundryRepository;
+import com.laundrify.server.repository.DriverRepository;
+import com.laundrify.server.model.Laundry;
+import com.laundrify.server.model.Driver;
+import com.laundrify.server.util.JwtUtil;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +34,8 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final EmailService emailService;
+    private final LaundryRepository laundryRepository;
+    private final DriverRepository driverRepository;
     private static final long TOKEN_EXPIRY_TIME = 15 * 60 * 1000; // 15 minutes in milliseconds
     
     public AuthResponse signup(SignupRequest request) {
@@ -120,7 +128,7 @@ public class AuthService {
             user.setPostalCode(request.getPostalCode());
             user.setProvince(request.getProvince());
             user.setRole("DRIVER");
-            user.setEnabled(true);
+            user.setEnabled(false);
             user.setCreatedAt(System.currentTimeMillis());
             user.setUpdatedAt(System.currentTimeMillis());
             
@@ -188,7 +196,7 @@ public class AuthService {
             user.setPostalCode(request.getPostalCode());
             user.setProvince(request.getProvince());
             user.setRole("LAUNDRY");
-            user.setEnabled(true);
+            user.setEnabled(false);
             user.setCreatedAt(System.currentTimeMillis());
             user.setUpdatedAt(System.currentTimeMillis());
             
@@ -245,7 +253,37 @@ public class AuthService {
             // Check if user is enabled
             if (!user.isEnabled()) {
                 response.setSuccess(false);
-                response.setMessage("User account is disabled");
+                if ("LAUNDRY".equals(user.getRole())) {
+                    Optional<Laundry> laundryOpt = laundryRepository.findByUserId(user.getId());
+                    if (laundryOpt.isPresent()) {
+                        Laundry laundry = laundryOpt.get();
+                        if (laundry.isBanned()) {
+                            response.setMessage("Your laundry account has been banned due to poor customer reviews.");
+                        } else if (!laundry.isVerified()) {
+                            response.setMessage("Your laundry registration is pending administrative approval. Please wait for review.");
+                        } else {
+                            response.setMessage("User account is disabled");
+                        }
+                    } else {
+                        response.setMessage("Your laundry registration is pending administrative approval. Please wait for review.");
+                    }
+                } else if ("DRIVER".equals(user.getRole())) {
+                    Optional<Driver> driverOpt = driverRepository.findByUserId(user.getId());
+                    if (driverOpt.isPresent()) {
+                        Driver driver = driverOpt.get();
+                        if (driver.isBanned()) {
+                            response.setMessage("Your driver account has been banned due to poor customer reviews.");
+                        } else if (!driver.isVerified()) {
+                            response.setMessage("Your driver registration is pending administrative approval. Please wait for review.");
+                        } else {
+                            response.setMessage("User account is disabled");
+                        }
+                    } else {
+                        response.setMessage("Your driver registration is pending administrative approval. Please wait for review.");
+                    }
+                } else {
+                    response.setMessage("User account is disabled");
+                }
                 return response;
             }
             

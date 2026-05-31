@@ -45,6 +45,7 @@ public class Driver {
     private String profileImagePath;
     
     private boolean verified;
+    private boolean banned;
     
     private long createdAt;
     private long updatedAt;

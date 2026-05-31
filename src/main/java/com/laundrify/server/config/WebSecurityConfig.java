@@ -33,6 +33,7 @@ public class WebSecurityConfig {
                 .requestMatchers("/api/user/**").permitAll()
                 .requestMatchers("/api/ratings/**").permitAll()
                 .requestMatchers("/api/orders/**").permitAll()
+                .requestMatchers("/api/admin/**").permitAll()
                 .requestMatchers("/uploads/**").permitAll()
                 .requestMatchers("/v3/api-docs/**").permitAll()
                 .requestMatchers("/swagger-ui/**").permitAll()

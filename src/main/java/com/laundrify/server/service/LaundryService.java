@@ -103,7 +103,7 @@ public class LaundryService {
             user.setPostalCode(request.getPostalCode());
             user.setProvince(request.getProvince());
             user.setRole("LAUNDRY");
-            user.setEnabled(true);
+            user.setEnabled(false);
             user.setCreatedAt(System.currentTimeMillis());
             user.setUpdatedAt(System.currentTimeMillis());
 
@@ -146,8 +146,6 @@ public class LaundryService {
             response.setEmail(savedUser.getEmail());
             response.setName(savedUser.getFirstName() + " " + (savedUser.getLastName() != null ? savedUser.getLastName() : ""));
             response.setRole(savedUser.getRole());
-            response.setToken(jwtUtil.generateToken(savedUser.getEmail(), savedUser.getId(), savedUser.getRole()));
-            response.setRefreshToken(jwtUtil.generateRefreshToken(savedUser.getEmail(), savedUser.getId()));
 
             try {
                 emailService.sendWelcomeEmail(savedUser.getEmail(), savedUser.getFirstName(), savedUser.getRole());
@@ -210,7 +208,9 @@ public class LaundryService {
         // Convert to response with ratings
         List<LaundryDetailsResponse> responses = new ArrayList<>();
         for (Laundry laundry : laundries) {
-            responses.add(convertToDetailsResponse(laundry));
+            if (laundry.isVerified() && !laundry.isBanned()) {
+                responses.add(convertToDetailsResponse(laundry));
+            }
         }
         
         return responses;
@@ -283,7 +283,9 @@ public class LaundryService {
             }
             
             if (queryMatches && locationMatches) {
-                responses.add(convertToDetailsResponse(laundry));
+                if (laundry.isVerified() && !laundry.isBanned()) {
+                    responses.add(convertToDetailsResponse(laundry));
+                }
             }
         }
         return responses;

@@ -50,6 +50,7 @@ public class Laundry {
     private List<String> additionalImagePaths;
 
     private boolean verified;
+    private boolean banned;
     
     private long createdAt;
     private long updatedAt;

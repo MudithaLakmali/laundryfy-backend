@@ -39,6 +39,9 @@ public class OrderService {
     @Value("${file.upload.review.dir:uploads/reviews}")
     private String uploadDir;
 
+    @Value("${file.upload.receipt.dir:uploads/receipts}")
+    private String receiptUploadDir;
+
     /**
      * Customer places a new order — status = PENDING
      */
@@ -302,14 +305,27 @@ public class OrderService {
     }
 
     /**
-     * Customer uploads receipt notes — SERVICE_COMPLETED → RECEIPT_UPLOADED
+     * Customer uploads receipt notes + optional image — SERVICE_COMPLETED → RECEIPT_UPLOADED
      */
-    public Order uploadReceipt(String orderId, String bankReceiptName, String paymentNotes) {
+    public Order uploadReceipt(String orderId, String bankReceiptName, String paymentNotes, MultipartFile receiptImage) {
         Optional<Order> maybe = orderRepository.findById(orderId);
         if (maybe.isEmpty()) return null;
 
         Order order = maybe.get();
         if (!"SERVICE_COMPLETED".equals(order.getStatus())) return null;
+
+        // Save receipt image if provided
+        if (receiptImage != null && !receiptImage.isEmpty()) {
+            try {
+                String fileName = "receipt_" + UUID.randomUUID() + "_" + receiptImage.getOriginalFilename();
+                Path filePath = Paths.get(receiptUploadDir, fileName);
+                Files.createDirectories(filePath.getParent());
+                Files.write(filePath, receiptImage.getBytes());
+                order.setReceiptImagePath(filePath.toString());
+            } catch (IOException e) {
+                log.error("Failed to save receipt image", e);
+            }
+        }
 
         order.setBankReceiptName(bankReceiptName);
         order.setPaymentNotes(paymentNotes);
@@ -391,6 +407,36 @@ public class OrderService {
         } catch (Exception e) {
             // Log warning but don't break order status flow
             log.warn("Warning: failed to add rating to RatingService: {}", e.getMessage());
+        }
+
+        return orderRepository.save(order);
+    }
+
+    /**
+     * Customer rates the driver — does NOT change order status
+     */
+    public Order rateDriver(String orderId, double driverRating, String driverReviewText) {
+        Optional<Order> maybe = orderRepository.findById(orderId);
+        if (maybe.isEmpty()) return null;
+
+        Order order = maybe.get();
+        // Allow driver rating once order is DELIVERED_TO_CUSTOMER or COMPLETED
+        if (!"DELIVERED_TO_CUSTOMER".equals(order.getStatus()) && !"COMPLETED".equals(order.getStatus())) return null;
+        if (order.getDriverId() == null) return null;
+
+        order.setDriverRating(driverRating);
+        order.setDriverReview(driverReviewText);
+        order.setUpdatedAt(System.currentTimeMillis());
+
+        // Persist to DriverRating collection
+        try {
+            com.laundrify.server.dto.DriverRatingRequest ratingRequest = new com.laundrify.server.dto.DriverRatingRequest();
+            ratingRequest.setDriverId(order.getDriverId());
+            ratingRequest.setRating(driverRating);
+            ratingRequest.setReview(driverReviewText);
+            ratingService.addDriverRating(order.getUserId(), ratingRequest);
+        } catch (Exception e) {
+            log.warn("Warning: failed to add driver rating to RatingService: {}", e.getMessage());
         }
 
         return orderRepository.save(order);

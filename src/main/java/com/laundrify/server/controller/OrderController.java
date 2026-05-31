@@ -139,13 +139,14 @@ public class OrderController {
         return ResponseEntity.ok(toResponse(updated));
     }
 
-    /** Customer uploads mock bank transfer receipt details */
+    /** Customer uploads mock bank transfer receipt details + optional receipt image */
     @PutMapping("/{id}/upload-receipt")
     public ResponseEntity<?> uploadReceipt(
             @PathVariable String id,
             @RequestParam String bankReceiptName,
-            @RequestParam(required = false) String paymentNotes) {
-        Order updated = orderService.uploadReceipt(id, bankReceiptName, paymentNotes);
+            @RequestParam(required = false) String paymentNotes,
+            @RequestParam(required = false) MultipartFile receiptImage) {
+        Order updated = orderService.uploadReceipt(id, bankReceiptName, paymentNotes, receiptImage);
         if (updated == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order not found or not in SERVICE_COMPLETED status");
         return ResponseEntity.ok(toResponse(updated));
     }
@@ -175,6 +176,17 @@ public class OrderController {
             @RequestParam(required = false) MultipartFile reviewImage) {
         Order updated = orderService.rateLaundry(id, rating, reviewText, reviewImage);
         if (updated == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order not found or not in DELIVERED_TO_CUSTOMER status");
+        return ResponseEntity.ok(toResponse(updated));
+    }
+
+    /** Customer rates and reviews the driver */
+    @PutMapping("/{id}/rate-driver")
+    public ResponseEntity<?> rateDriver(
+            @PathVariable String id,
+            @RequestParam double driverRating,
+            @RequestParam(required = false) String driverReviewText) {
+        Order updated = orderService.rateDriver(id, driverRating, driverReviewText);
+        if (updated == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Order not found, not in correct status, or no driver assigned");
         return ResponseEntity.ok(toResponse(updated));
     }
 
@@ -224,9 +236,12 @@ public class OrderController {
                 o.getReviewNotes(),
                 o.getBankReceiptName(),
                 o.getPaymentNotes(),
+                o.getReceiptImagePath(),
                 o.getLaundryRating(),
                 o.getLaundryReview(),
                 o.getReviewImagePath(),
+                o.getDriverRating(),
+                o.getDriverReview(),
                 o.getPickupTimestamp(),
                 o.getDeliveryTimestamp(),
                 o.getCreatedAt(),

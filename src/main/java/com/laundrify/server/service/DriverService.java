@@ -82,7 +82,7 @@ public class DriverService {
             user.setPostalCode(request.getPostalCode());
             user.setProvince(request.getProvince());
             user.setRole("DRIVER");
-            user.setEnabled(true);
+            user.setEnabled(false);
             user.setCreatedAt(System.currentTimeMillis());
             user.setUpdatedAt(System.currentTimeMillis());
 

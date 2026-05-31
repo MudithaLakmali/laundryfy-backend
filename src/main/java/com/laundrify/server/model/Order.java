@@ -49,11 +49,16 @@ public class Order {
     // Extended payment & return delivery lifecycle fields
     private String bankReceiptName;
     private String paymentNotes;
+    private String receiptImagePath; // uploaded receipt image proof
 
     // Customer review & rating fields
     private double laundryRating;
     private String laundryReview;
     private String reviewImagePath;
+
+    // Driver review & rating fields
+    private double driverRating;
+    private String driverReview;
 
     private long pickupTimestamp;
     private long deliveryTimestamp;
